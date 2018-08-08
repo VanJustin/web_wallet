@@ -1,0 +1,205 @@
+<html>
+<head>
+  <title>wallet</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+  <link href="/static/css/bootstrap.min.css" rel="stylesheet">
+  <link href="/static/css/jquery.jsonview.css" rel="stylesheet">
+  <style media="screen">
+  *{
+    margin: 0;
+    padding: 0;
+  }
+  pre{
+    padding: 10px;
+  }
+  #cp{
+    width: 90%;
+    max-width: 960px;
+    margin: 0 auto;
+  }
+  </style>
+  <script src="/static/js/jquery.min.js"></script>
+  <script src="/static/js/jquery.qrcode.min.js"></script>
+  <script src="/static/js/bootstrap.min.js"></script>
+  <script src="/static/js/jquery.jsonview.min.js"></script>
+</head>
+<body>
+  <div id="cp">
+    <h2>wallet</h2>
+
+    <div class="panel panel-default">
+      <div class="panel-heading" id="wallet_amount">00.000000</div>
+      <div class="panel-body">
+        <div class="form-group">
+          <pre id="pending" style="display:none;"></pre>
+          <div id="address_list"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel panel-default">
+      <div class="panel-heading">Transaction</div>
+      <div class="panel-body">
+        <div class="form-group">
+          <div class="alert alert-danger" role="alert" id="address_err" style="display:none">address error</div>
+          <input class="form-control" type="text" id="payment_address" placeholder="address" value="">
+        </div>
+        <div class="form-group">
+          <div class="alert alert-danger" role="alert" id="amount_err" style="display:none">amount error</div>
+          <input class="form-control" type="text" id="payment_amount" placeholder="amount" value="">
+        </div>
+        <div class="form-group">
+          <input class="form-control" type="text" id="payment_memo" placeholder="memo" value="">
+        </div>
+        <button class="btn btn-primary" type="button" id="payment_btn">Send</button>
+      </div>
+    </div>
+
+    <div class="panel panel-default">
+      <div class="panel-heading">Set</div>
+      <div class="panel-body">
+        <button class="btn btn-primary" type="button" id="export_keys">export seed phrase</button>
+        <button class="btn btn-primary disabled" disabled type="button" id="import_keys">import seed phrase (coming soon)</button>
+      </div>
+    </div>
+
+  </div>
+
+
+  <script type="text/javascript">
+
+  function get_wallet_amount(){
+    $.getJSON("/api/balance",function(json){
+      console.log(json);
+      if(json.hasOwnProperty("stable")){
+        var stable=json.stable;
+        $("#wallet_amount").text(stable+" MN");
+      }
+
+      if(json.hasOwnProperty("balance")){
+        var balance=json.balance;
+        //$("#wallet_amount").text(balance+" MN");
+      }
+
+      if(json.hasOwnProperty("pending")){
+         var pending=json.pending;
+         if(pending==0){
+           $("#wallet_amount").css("color","green")
+         }else{
+           $("#wallet_amount").css("color","red")
+         }
+      }
+      // if(json.hasOwnProperty("pending")){
+      //   pending=json.pending;
+      //   if(pending!=0){
+      //     $("#pending").text(pending+" MN(pending)");
+      //     $("#pending").show();
+      //   }else{
+      //     $("#pending").hide();
+      //   }
+      // }
+    });
+  }
+
+  function get_wallet_address_list(){
+    $.getJSON("/api/address",function(json){
+      for (var i in json) {
+        var address=json[i];
+        var li=$("<pre></pre>");
+        var a=$("<a></a>");
+        a.attr("href","/wallet/"+address);
+        a.text(address);
+        li.append(a);
+        $("#address_list").append(li);
+      }
+
+    });
+  }
+
+
+
+
+  get_wallet_amount();
+
+  get_wallet_address_list();
+
+  setInterval(function(){
+    get_wallet_amount();
+  },3000);
+
+
+  $("#export_keys").click(function(){
+    $.getJSON("/api/keys",function(json){
+      $("#json").JSONView(json, { collapsed: true });
+      console.log(json);
+      $("#Modal").modal();
+    });
+  });
+
+  $("#payment_btn").click(function(){
+    var address=$("#payment_address").val();
+    var amount=parseFloat($("#payment_amount").val());
+    var memo=$("#payment_memo").val();
+
+    if(address.length!=32){
+      $("#address_err").show();
+
+    }else{
+      if(amount>0){
+        $("#amount_err").hide();
+
+        $.getJSON("/api/address/"+address,function(json){
+          console.log(json);
+          if(json===true){
+            //
+            $("#address_err").hide();
+            var api_url="/api/pay";
+            $.post(api_url,{address:address,amount:amount,text:memo},function(json){
+              //$("#json").JSONView(json, { collapsed: true });
+              var a=$("<a></a>");
+              a.attr("href","http://dev.trustnote.org:3000/detail#"+json);
+              a.text("visit info at explorer")
+              $("#json").append(a);
+              console.log(json);
+              $("#Modal").modal();
+              $("#payment_address").val("");
+              $("#payment_amount").val("");
+              $("#payment_memo").val("");
+            });
+
+            //
+          }else{
+            $("#address_err").show();
+            //$("#json").text("address error");
+            //$("#Modal").modal();
+          }
+        });
+      }else{
+        $("#amount_err").show();
+      }
+
+
+    }
+  });
+  </script>
+
+  <!-- Modal -->
+  <div class="modal fade" id="Modal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+          <h4 class="modal-title" id="alert_title">Message</h4>
+        </div>
+        <div class="modal-body">
+          <pre id="json"></pre>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-primary" data-dismiss="modal">Close</button>
+        </div>
+      </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+  </div>
+
+</body>
+</html>
