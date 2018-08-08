@@ -17,6 +17,17 @@
     max-width: 960px;
     margin: 0 auto;
   }
+  canvas{
+    width: 100%;
+  }
+  #qrcode{
+    margin: 10px auto;
+    width: 80px;
+    height: 80px;
+  }
+  #address{
+    text-align: center;
+  }
   </style>
   <script src="/static/js/jquery.min.js"></script>
   <script src="/static/js/jquery.qrcode.min.js"></script>
@@ -25,14 +36,15 @@
 </head>
 <body>
   <div id="cp">
-    <h2>wallet</h2>
+    <h2>web wallet</h2>
 
     <div class="panel panel-default">
       <div class="panel-heading" id="wallet_amount">00.000000</div>
       <div class="panel-body">
         <div class="form-group">
           <pre id="pending" style="display:none;"></pre>
-          <div id="address_list"></div>
+          <div id="qrcode"></div>
+          <div id="address"></div>
         </div>
       </div>
     </div>
@@ -51,7 +63,7 @@
         <div class="form-group">
           <input class="form-control" type="text" id="payment_memo" placeholder="memo" value="">
         </div>
-        <button class="btn btn-primary" type="button" id="payment_btn">Send</button>
+        <button class="btn btn-primary" type="button" id="payment_btn">Confirm</button>
       </div>
     </div>
 
@@ -103,16 +115,17 @@
 
   function get_wallet_address_list(){
     $.getJSON("/api/address",function(json){
-      for (var i in json) {
-        var address=json[i];
-        var li=$("<pre></pre>");
-        var a=$("<a></a>");
-        a.attr("href","/wallet/"+address);
-        a.text(address);
-        li.append(a);
-        $("#address_list").append(li);
-      }
-
+      // for (var i in json) {
+      //   var address=json[i];
+      //   var li=$("<pre></pre>");
+      //   var a=$("<a></a>");
+      //   a.attr("href","/wallet/"+address);
+      //   a.text(address);
+      //   li.append(a);
+      //   $("#address_list").append(li);
+      // }
+      $("#address").text(json[0]);
+      $('#qrcode').qrcode(json[0]);
     });
   }
 
