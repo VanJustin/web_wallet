@@ -83,14 +83,14 @@
   function get_wallet_amount(){
     $.getJSON("/api/balance",function(json){
       console.log(json);
-      if(json.hasOwnProperty("stable")){
-        var stable=json.stable;
-        $("#wallet_amount").text(stable+" MN");
-      }
+      // if(json.hasOwnProperty("stable")){
+      //   var stable=json.stable;
+      //   $("#wallet_amount").text(stable+" MN");
+      // }
 
       if(json.hasOwnProperty("balance")){
         var balance=json.balance;
-        //$("#wallet_amount").text(balance+" MN");
+        $("#wallet_amount").text(balance+" MN");
       }
 
       if(json.hasOwnProperty("pending")){
