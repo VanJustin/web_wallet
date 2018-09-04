@@ -1,4 +1,4 @@
-# A Web Wallet
+# A Simple Web Wallet
 
 ## Install
 
@@ -21,10 +21,10 @@ Now, you can visit http://localhost:9001 from your web browser and see how it wo
 
 ## Demo
 
-* get TTT for testing
+* Get TTT for testing
 
 ![demo 1](webwallet.gif)
 
-* transaction
+* Make transaction
 
 ![demo 2](transaction.gif)
