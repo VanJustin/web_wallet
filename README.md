@@ -13,7 +13,7 @@ pip3 install -r requirements.txt
 ## Run
 
 ```
-python3 web.py -p 9001
+python3 app.py -p 9001
 ```
 
 Now, you can visit http://localhost:9001 from your web browser and see how it works!
